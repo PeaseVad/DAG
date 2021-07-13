@@ -18,11 +18,11 @@ dag = DAG(
 BLOB_NAME = "load_parametrs/zones.csv"
 AZURE_CONTAINER_NAME = "v-pasechnyk"
 
- wait_for_blob = WasbBlobSensor(
-        task_id="wait_for_blob",
-        wasb_conn_id="wasb_default",
-        container_name=AZURE_CONTAINER_NAME,
-        blob_name=BLOB_NAME,
+wait_for_blob = WasbBlobSensor(
+    task_id="wait_for_blob",
+    wasb_conn_id="wasb_default",
+    container_name=AZURE_CONTAINER_NAME,
+    blob_name=BLOB_NAME,
     )
 
 notebook_task_params = {
