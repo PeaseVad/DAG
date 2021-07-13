@@ -4,8 +4,8 @@ import requests.exceptions as requests_exceptions
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-
 from airflow.providers.databricks.operators.databricks import DatabricksSubmitRunOperator
+from airflow.providers.microsoft.azure.sensors.wasb import WasbBlobSensor
 
 dag = DAG(
     dag_id = "databricks_run",
@@ -13,6 +13,17 @@ dag = DAG(
     schedule_interval=None,
     tags=['azure'],
 )
+
+
+BLOB_NAME = "load_parametrs/zones.csv"
+AZURE_CONTAINER_NAME = "v-pasechnyk"
+
+ wait_for_blob = WasbBlobSensor(
+        task_id="wait_for_blob",
+        wasb_conn_id="wasb_default",
+        container_name=AZURE_CONTAINER_NAME,
+        blob_name=BLOB_NAME,
+    )
 
 notebook_task_params = {
     'existing_cluster_id': '0422-081121-mixed26',
@@ -27,4 +38,4 @@ notebook_task = DatabricksSubmitRunOperator(
     dag = dag,
 )
 
-notebook_task
+wait_for_blob >> notebook_task
