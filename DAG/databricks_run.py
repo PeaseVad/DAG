@@ -17,8 +17,8 @@ dag = DAG(
 notebook_task_params = {
     'existing_cluster_id': '0422-081121-mixed26',
     'notebook_task': {
-        'notebook_path': '/Users/v.pasechnyk@godeltech.com/airflow_test',
-        'base_parameters' : {'run_date' : '2021/06/17'},
+        'notebook_path': '/Users/v.pasechnyk@godeltech.com/Weather-Data-Prep-Airflow',
+        'base_parameters' : {'run_date' : '2021/07/12'},
     },
 }
 notebook_task = DatabricksSubmitRunOperator(
