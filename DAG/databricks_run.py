@@ -5,15 +5,15 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.databricks.operators.databricks import DatabricksSubmitRunOperator
+from airflow.providers.microsoft.azure.operators.adls_delete import AzureDataLakeStorageDeleteOperator
 from airflow.providers.microsoft.azure.sensors.wasb import WasbBlobSensor
 
 dag = DAG(
-    dag_id = "databricks_run",
-    start_date = airflow.utils.dates.days_ago(0),
+    dag_id="databricks_run",
+    start_date=airflow.utils.dates.days_ago(0),
     schedule_interval=None,
     tags=['azure'],
 )
-
 
 BLOB_NAME = "load_parametrs/zones.csv"
 AZURE_CONTAINER_NAME = "v-pasechnyk"
@@ -23,19 +23,25 @@ wait_for_blob = WasbBlobSensor(
     wasb_conn_id="wasb_default",
     container_name=AZURE_CONTAINER_NAME,
     blob_name=BLOB_NAME,
-    )
+)
 
 notebook_task_params = {
     'existing_cluster_id': '0422-081121-mixed26',
     'notebook_task': {
         'notebook_path': '/Users/v.pasechnyk@godeltech.com/Weather-Data-Prep-Airflow',
-        'base_parameters' : {'run_date' : '2021/07/12'},
+        'base_parameters': {'run_date': '2021/07/12'},
     },
 }
 notebook_task = DatabricksSubmitRunOperator(
-    task_id = 'notebook_task', 
-    json = notebook_task_params,
-    dag = dag,
+    task_id='notebook_task',
+    json=notebook_task_params,
+    dag=dag,
 )
 
-wait_for_blob >> notebook_task
+remove_param_file = AzureDataLakeStorageDeleteOperator(
+    task_id="delete_param_file",
+    path=AZURE_CONTAINER_NAME+'/'+BLOB_NAME,
+    recursive=False
+)
+
+wait_for_blob >> notebook_task >> remove_param_file
