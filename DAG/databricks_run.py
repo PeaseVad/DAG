@@ -5,7 +5,7 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.databricks.operators.databricks import DatabricksSubmitRunOperator
-from airflow.providers.microsoft.azure.operators.adls_delete import AzureDataLakeStorageDeleteOperator
+from airflow.providers.microsoft.azure.operators.wasb_delete_blob import WasbDeleteBlobOperator
 from airflow.providers.microsoft.azure.sensors.wasb import WasbBlobSensor
 
 dag = DAG(
@@ -38,10 +38,11 @@ notebook_task = DatabricksSubmitRunOperator(
     dag=dag,
 )
 
-remove_param_file = AzureDataLakeStorageDeleteOperator(
+remove_param_file = WasbDeleteBlobOperator(
     task_id="delete_param_file",
-    path=AZURE_CONTAINER_NAME+'/'+BLOB_NAME,
-    recursive=False
+    wasb_conn_id="wasb_default",
+    container_name=AZURE_CONTAINER_NAME,
+    blob_name=BLOB_NAME
 )
 
 wait_for_blob >> notebook_task >> remove_param_file
